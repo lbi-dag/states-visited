@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>States Visited Tracker</title>
+    <link
+      rel="icon"
+      href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='16' fill='%23146356'/%3E%3Cpath d='M19 33l8 8 18-20' fill='none' stroke='%23fff8ef' stroke-width='6' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E"
+    />
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <div class="page-shell">
+      <header class="hero">
+        <div class="hero-copy">
+          <p class="eyebrow">Travel log</p>
+          <h1>Track every US state you've visited.</h1>
+          <p class="hero-text">
+            Update your progress from a searchable list or a clickable map.
+            Both views stay in sync automatically.
+          </p>
+        </div>
+        <div class="hero-card">
+          <p class="hero-card-label">Progress</p>
+          <p class="hero-card-value"><span id="visited-count">0</span>/50</p>
+          <div class="progress-bar" aria-hidden="true">
+            <div class="progress-fill" id="progress-fill"></div>
+          </div>
+          <p class="hero-card-note" id="progress-note">0% complete</p>
+        </div>
+      </header>
+
+      <main class="app-grid">
+        <aside class="sidebar">
+          <section class="panel stat-panel" aria-label="Visit summary">
+            <div class="stat-card">
+              <span class="stat-label">Visited</span>
+              <strong class="stat-value" id="visited-total">0</strong>
+            </div>
+            <div class="stat-card">
+              <span class="stat-label">Remaining</span>
+              <strong class="stat-value" id="remaining-total">50</strong>
+            </div>
+            <div class="stat-card">
+              <span class="stat-label">Most recent focus</span>
+              <strong class="stat-value stat-value-small" id="focus-label">
+                All states
+              </strong>
+            </div>
+          </section>
+
+          <section class="panel controls-panel" aria-label="Filters and actions">
+            <div class="control-stack">
+              <label class="control-label" for="search-input">Search states</label>
+              <input
+                id="search-input"
+                class="text-input"
+                type="search"
+                placeholder="Start typing a state name"
+              />
+            </div>
+
+            <div class="control-stack">
+              <label class="control-label" for="region-select">Region</label>
+              <select id="region-select" class="select-input">
+                <option value="all">All regions</option>
+                <option value="Northeast">Northeast</option>
+                <option value="South">South</option>
+                <option value="Midwest">Midwest</option>
+                <option value="West">West</option>
+              </select>
+            </div>
+
+            <div class="control-stack">
+              <label class="control-label" for="status-select">Status</label>
+              <select id="status-select" class="select-input">
+                <option value="all">All states</option>
+                <option value="visited">Visited only</option>
+                <option value="unvisited">Not visited yet</option>
+              </select>
+            </div>
+
+            <div class="view-toggle" role="tablist" aria-label="View selector">
+              <button
+                class="view-button is-active"
+                id="list-tab"
+                data-view="list"
+                role="tab"
+                aria-selected="true"
+                aria-controls="list-panel"
+              >
+                List view
+              </button>
+              <button
+                class="view-button"
+                id="map-tab"
+                data-view="map"
+                role="tab"
+                aria-selected="false"
+                aria-controls="map-panel"
+              >
+                Map view
+              </button>
+            </div>
+
+            <div class="action-row">
+              <button id="clear-button" class="secondary-button" type="button">
+                Reset visits
+              </button>
+              <button id="copy-button" class="primary-button" type="button">
+                Copy visited list
+              </button>
+            </div>
+            <p class="helper-text" id="action-message" aria-live="polite">
+              Updates are saved in this browser.
+            </p>
+          </section>
+        </aside>
+
+        <section class="content">
+          <section
+            class="panel view-panel"
+            id="list-panel"
+            role="tabpanel"
+            aria-labelledby="list-tab"
+          >
+            <div class="panel-heading">
+              <div>
+                <p class="panel-eyebrow">List</p>
+                <h2>Browse all states</h2>
+              </div>
+              <p class="panel-caption" id="list-summary">Showing 50 states</p>
+            </div>
+            <ul class="state-list" id="state-list"></ul>
+          </section>
+
+          <section
+            class="panel view-panel is-hidden"
+            id="map-panel"
+            role="tabpanel"
+            aria-labelledby="map-tab"
+            hidden
+          >
+            <div class="panel-heading">
+              <div>
+                <p class="panel-eyebrow">Map</p>
+                <h2>Tap states on the map</h2>
+              </div>
+              <p class="panel-caption">
+                Tile map layout for fast, touch-friendly updates
+              </p>
+            </div>
+            <div class="map-wrap">
+              <div class="tile-map" id="tile-map" aria-label="US states tile map"></div>
+            </div>
+            <div class="map-legend">
+              <span><i class="legend-swatch legend-swatch-visited"></i>Visited</span>
+              <span><i class="legend-swatch legend-swatch-open"></i>Not visited</span>
+            </div>
+          </section>
+        </section>
+      </main>
+    </div>
+
+    <script type="module" src="./app.js"></script>
+  </body>
+</html>

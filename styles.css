@@ -398,7 +398,7 @@ h2 {
 
 .tile-map {
   display: grid;
-  grid-template-columns: repeat(13, var(--tile-size));
+  grid-template-columns: repeat(12, var(--tile-size));
   grid-template-rows: repeat(7, var(--tile-size));
   gap: 10px;
   min-width: max-content;

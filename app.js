@@ -8,7 +8,7 @@ const STATES = [
   { code: "CA", name: "California", region: "West", row: 3, col: 1 },
   { code: "CO", name: "Colorado", region: "West", row: 3, col: 4 },
   { code: "CT", name: "Connecticut", region: "Northeast", row: 2, col: 12 },
-  { code: "DE", name: "Delaware", region: "South", row: 3, col: 12 },
+  { code: "DE", name: "Delaware", region: "South", row: 4, col: 11 },
   { code: "FL", name: "Florida", region: "South", row: 6, col: 10 },
   { code: "GA", name: "Georgia", region: "South", row: 5, col: 9 },
   { code: "HI", name: "Hawaii", region: "West", row: 7, col: 2 },
@@ -19,33 +19,33 @@ const STATES = [
   { code: "KS", name: "Kansas", region: "Midwest", row: 4, col: 4 },
   { code: "KY", name: "Kentucky", region: "South", row: 3, col: 7 },
   { code: "LA", name: "Louisiana", region: "South", row: 5, col: 6 },
-  { code: "ME", name: "Maine", region: "Northeast", row: 1, col: 13 },
-  { code: "MD", name: "Maryland", region: "South", row: 3, col: 10 },
+  { code: "ME", name: "Maine", region: "Northeast", row: 1, col: 12 },
+  { code: "MD", name: "Maryland", region: "South", row: 4, col: 10 },
   { code: "MA", name: "Massachusetts", region: "Northeast", row: 2, col: 11 },
   { code: "MI", name: "Michigan", region: "Midwest", row: 1, col: 8 },
-  { code: "MN", name: "Minnesota", region: "Midwest", row: 1, col: 6 },
+  { code: "MN", name: "Minnesota", region: "Midwest", row: 1, col: 5 },
   { code: "MS", name: "Mississippi", region: "South", row: 5, col: 7 },
   { code: "MO", name: "Missouri", region: "Midwest", row: 3, col: 6 },
   { code: "MT", name: "Montana", region: "West", row: 1, col: 3 },
   { code: "NE", name: "Nebraska", region: "Midwest", row: 3, col: 5 },
   { code: "NV", name: "Nevada", region: "West", row: 3, col: 2 },
-  { code: "NH", name: "New Hampshire", region: "Northeast", row: 1, col: 12 },
-  { code: "NJ", name: "New Jersey", region: "Northeast", row: 3, col: 11 },
+  { code: "NH", name: "New Hampshire", region: "Northeast", row: 1, col: 11 },
+  { code: "NJ", name: "New Jersey", region: "Northeast", row: 3, col: 10 },
   { code: "NM", name: "New Mexico", region: "West", row: 4, col: 3 },
   { code: "NY", name: "New York", region: "Northeast", row: 2, col: 10 },
   { code: "NC", name: "North Carolina", region: "South", row: 4, col: 9 },
-  { code: "ND", name: "North Dakota", region: "Midwest", row: 1, col: 5 },
+  { code: "ND", name: "North Dakota", region: "Midwest", row: 1, col: 4 },
   { code: "OH", name: "Ohio", region: "Midwest", row: 2, col: 8 },
   { code: "OK", name: "Oklahoma", region: "South", row: 5, col: 5 },
   { code: "OR", name: "Oregon", region: "West", row: 2, col: 1 },
   { code: "PA", name: "Pennsylvania", region: "Northeast", row: 2, col: 9 },
-  { code: "RI", name: "Rhode Island", region: "Northeast", row: 2, col: 13 },
+  { code: "RI", name: "Rhode Island", region: "Northeast", row: 3, col: 11 },
   { code: "SC", name: "South Carolina", region: "South", row: 5, col: 10 },
   { code: "SD", name: "South Dakota", region: "Midwest", row: 2, col: 4 },
   { code: "TN", name: "Tennessee", region: "South", row: 4, col: 7 },
   { code: "TX", name: "Texas", region: "South", row: 6, col: 5 },
   { code: "UT", name: "Utah", region: "West", row: 3, col: 3 },
-  { code: "VT", name: "Vermont", region: "Northeast", row: 1, col: 11 },
+  { code: "VT", name: "Vermont", region: "Northeast", row: 1, col: 10 },
   { code: "VA", name: "Virginia", region: "South", row: 3, col: 9 },
   { code: "WA", name: "Washington", region: "West", row: 1, col: 1 },
   { code: "WV", name: "West Virginia", region: "South", row: 3, col: 8 },
@@ -259,6 +259,24 @@ function setActionMessage(message) {
   elements.actionMessage.textContent = message;
 }
 
+function copyTextFallback(text) {
+  const textarea = document.createElement("textarea");
+  textarea.value = text;
+  textarea.setAttribute("readonly", "");
+  textarea.style.position = "fixed";
+  textarea.style.opacity = "0";
+  document.body.appendChild(textarea);
+  textarea.select();
+
+  try {
+    return document.execCommand("copy");
+  } catch {
+    return false;
+  } finally {
+    document.body.removeChild(textarea);
+  }
+}
+
 function attachEventListeners() {
   elements.searchInput.addEventListener("input", (event) => {
     appState.search = event.target.value;
@@ -331,9 +349,18 @@ function attachEventListeners() {
     }
 
     try {
-      await navigator.clipboard.writeText(visitedStates);
-      setActionMessage("Visited states copied to the clipboard.");
+      if (navigator.clipboard?.writeText) {
+        await navigator.clipboard.writeText(visitedStates);
+        setActionMessage("Visited states copied to the clipboard.");
+        return;
+      }
     } catch {
+      // Fall through to the legacy copy path for file:// and other restricted contexts.
+    }
+
+    if (copyTextFallback(visitedStates)) {
+      setActionMessage("Visited states copied to the clipboard.");
+    } else {
       setActionMessage("Clipboard access failed. Your browser may block it.");
     }
   });

@@ -69,12 +69,18 @@ const elements = {
   listSummary: document.querySelector("#list-summary"),
   stateList: document.querySelector("#state-list"),
   tileMap: document.querySelector("#tile-map"),
+  geoMap: document.querySelector("#geo-map"),
   clearButton: document.querySelector("#clear-button"),
   copyButton: document.querySelector("#copy-button"),
   listPanel: document.querySelector("#list-panel"),
   mapPanel: document.querySelector("#map-panel"),
+  geoPanel: document.querySelector("#geo-panel"),
   viewButtons: document.querySelectorAll("[data-view]"),
 };
+
+let leafletMap;
+let leafletGeoLayer;
+let hasLeafletInitialView = false;
 
 const appState = {
   visited: loadVisitedStates(),
@@ -221,19 +227,185 @@ function renderMap(filteredStates) {
   }).join("");
 }
 
+function getLeafletStyle(code, visibleCodes, isHovered = false) {
+  const isVisited = appState.visited.has(code);
+  const isVisible = visibleCodes.has(code);
+
+  return {
+    color: isHovered ? "#c96d3a" : "rgba(29, 42, 52, 0.34)",
+    weight: isHovered ? 2.4 : 1.2,
+    fillColor: isVisited ? "#146356" : "#fff6ea",
+    fillOpacity: isVisible ? (isVisited ? 0.8 : 0.86) : 0.24,
+    opacity: isVisible ? 0.95 : 0.3,
+    dashArray: isVisible ? "" : "3 5",
+  };
+}
+
+function transformCoordinates(coordinates, projector) {
+  if (typeof coordinates[0] === "number") {
+    return projector(coordinates);
+  }
+
+  return coordinates.map((child) => transformCoordinates(child, projector));
+}
+
+function createLeafletGeoJson(sourceGeoJson) {
+  const clone = {
+    ...sourceGeoJson,
+    features: sourceGeoJson.features.map((feature) => ({
+      ...feature,
+      properties: { ...feature.properties },
+      geometry: {
+        ...feature.geometry,
+        coordinates: feature.geometry.coordinates,
+      },
+    })),
+  };
+
+  return {
+    ...clone,
+    features: clone.features.map((feature) => {
+      const code = feature.properties.state_code;
+
+      if (code === "AK") {
+        const originLng = -152;
+        const originLat = 64;
+        const scale = 0.38;
+        const shiftLng = 17;
+        const shiftLat = -11;
+
+        return {
+          ...feature,
+          geometry: {
+            ...feature.geometry,
+            coordinates: transformCoordinates(feature.geometry.coordinates, ([lng, lat]) => [
+              originLng + (lng - originLng) * scale + shiftLng,
+              originLat + (lat - originLat) * scale + shiftLat,
+            ]),
+          },
+        };
+      }
+
+      if (code === "HI") {
+        const originLng = -157.5;
+        const originLat = 20.9;
+        const scale = 1.75;
+
+        return {
+          ...feature,
+          geometry: {
+            ...feature.geometry,
+            coordinates: transformCoordinates(feature.geometry.coordinates, ([lng, lat]) => [
+              originLng + (lng - originLng) * scale + 8,
+              originLat + (lat - originLat) * scale + 5,
+            ]),
+          },
+        };
+      }
+
+      return feature;
+    }),
+  };
+}
+
+function initializeLeafletMap() {
+  if (leafletMap || !window.L || !window.US_STATES_GEOJSON || !elements.geoMap) {
+    return;
+  }
+
+  leafletMap = L.map(elements.geoMap, {
+    zoomSnap: 0.25,
+    zoomDelta: 0.5,
+    minZoom: 2.5,
+    maxZoom: 7,
+    attributionControl: true,
+  });
+  elements.geoMap._leafletMap = leafletMap;
+
+  leafletMap.attributionControl.setPrefix(
+    '<a href="https://leafletjs.com/">Leaflet</a>'
+  );
+  leafletMap.attributionControl.addAttribution(
+    'State boundaries from DataHub'
+  );
+
+  const visibleCodes = new Set(getFilteredStates().map((state) => state.code));
+  const leafletGeoJson = createLeafletGeoJson(window.US_STATES_GEOJSON);
+
+  leafletGeoLayer = L.geoJSON(leafletGeoJson, {
+    style: (feature) => getLeafletStyle(feature.properties.state_code, visibleCodes),
+    onEachFeature: (feature, layer) => {
+      const { name, state_code: code } = feature.properties;
+      layer.bindTooltip(`${name} (${code})`, {
+        sticky: true,
+        direction: "top",
+        className: "state-tooltip",
+      });
+      layer.on("click", () => {
+        toggleState(code);
+        setActionMessage(`${code} updated from the geographic view.`);
+      });
+      layer.on("mouseover", () => {
+        layer.setStyle(getLeafletStyle(code, new Set(getFilteredStates().map((state) => state.code)), true));
+        layer.bringToFront();
+      });
+      layer.on("mouseout", () => {
+        updateLeafletStateStyles();
+      });
+    },
+  }).addTo(leafletMap);
+
+  leafletMap.fitBounds(leafletGeoLayer.getBounds(), {
+    padding: [18, 18],
+  });
+  hasLeafletInitialView = true;
+}
+
+function updateLeafletStateStyles() {
+  if (!leafletGeoLayer) {
+    return;
+  }
+
+  const visibleCodes = new Set(getFilteredStates().map((state) => state.code));
+  leafletGeoLayer.eachLayer((layer) => {
+    const code = layer.feature.properties.state_code;
+    layer.setStyle(getLeafletStyle(code, visibleCodes));
+  });
+}
+
 function renderView() {
   const showList = appState.currentView === "list";
+  const showMap = appState.currentView === "map";
+  const showGeo = appState.currentView === "geo";
 
   elements.listPanel.classList.toggle("is-hidden", !showList);
-  elements.mapPanel.classList.toggle("is-hidden", showList);
+  elements.mapPanel.classList.toggle("is-hidden", !showMap);
+  elements.geoPanel.classList.toggle("is-hidden", !showGeo);
   elements.listPanel.hidden = !showList;
-  elements.mapPanel.hidden = showList;
+  elements.mapPanel.hidden = !showMap;
+  elements.geoPanel.hidden = !showGeo;
 
   elements.viewButtons.forEach((button) => {
     const isActive = button.dataset.view === appState.currentView;
     button.classList.toggle("is-active", isActive);
     button.setAttribute("aria-selected", String(isActive));
   });
+
+  if (showGeo) {
+    initializeLeafletMap();
+    window.setTimeout(() => {
+      if (!leafletMap) {
+        return;
+      }
+      leafletMap.invalidateSize();
+      if (leafletGeoLayer && !hasLeafletInitialView) {
+        leafletMap.fitBounds(leafletGeoLayer.getBounds(), {
+          padding: [18, 18],
+        });
+        hasLeafletInitialView = true;
+      }
+    }, 0);
+  }
 }
 
 function render() {
@@ -241,6 +413,7 @@ function render() {
   renderStats(filteredStates);
   renderList(filteredStates);
   renderMap(filteredStates);
+  updateLeafletStateStyles();
   renderView();
 }
 

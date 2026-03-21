@@ -8,6 +8,7 @@
       rel="icon"
       href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='16' fill='%23146356'/%3E%3Cpath d='M19 33l8 8 18-20' fill='none' stroke='%23fff8ef' stroke-width='6' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E"
     />
+    <link rel="stylesheet" href="./vendor/leaflet.css" />
     <link rel="stylesheet" href="./styles.css" />
   </head>
   <body>
@@ -17,9 +18,14 @@
           <p class="eyebrow">Travel log</p>
           <h1>Track every US state you've visited.</h1>
           <p class="hero-text">
-            Update your progress from a searchable list or a clickable map.
-            Both views stay in sync automatically.
+            Update your progress from a searchable list, a tile map, or a
+            real state-boundary map. Every view stays in sync automatically.
           </p>
+          <div class="hero-badges" aria-label="Highlights">
+            <span class="hero-badge">3 synchronized views</span>
+            <span class="hero-badge">50-state checklist</span>
+            <span class="hero-badge">Saved locally</span>
+          </div>
         </div>
         <div class="hero-card">
           <p class="hero-card-label">Progress</p>
@@ -28,6 +34,10 @@
             <div class="progress-fill" id="progress-fill"></div>
           </div>
           <p class="hero-card-note" id="progress-note">0% complete</p>
+          <div class="hero-card-footer">
+            <span>Private to this browser</span>
+            <span>Tap any state to update</span>
+          </div>
         </div>
       </header>
 
@@ -81,6 +91,22 @@
               </select>
             </div>
 
+            <div class="action-row">
+              <button id="clear-button" class="secondary-button" type="button">
+                Reset visits
+              </button>
+              <button id="copy-button" class="primary-button" type="button">
+                Copy visited list
+              </button>
+            </div>
+            <p class="helper-text" id="action-message" aria-live="polite">
+              Updates are saved in this browser.
+            </p>
+          </section>
+        </aside>
+
+        <section class="content">
+          <div class="content-toolbar">
             <div class="view-toggle" role="tablist" aria-label="View selector">
               <button
                 class="view-button is-active"
@@ -102,23 +128,19 @@
               >
                 Map view
               </button>
-            </div>
-
-            <div class="action-row">
-              <button id="clear-button" class="secondary-button" type="button">
-                Reset visits
+              <button
+                class="view-button"
+                id="geo-tab"
+                data-view="geo"
+                role="tab"
+                aria-selected="false"
+                aria-controls="geo-panel"
+              >
+                Geographic view
               </button>
-              <button id="copy-button" class="primary-button" type="button">
-                Copy visited list
-              </button>
             </div>
-            <p class="helper-text" id="action-message" aria-live="polite">
-              Updates are saved in this browser.
-            </p>
-          </section>
-        </aside>
+          </div>
 
-        <section class="content">
           <section
             class="panel view-panel"
             id="list-panel"
@@ -159,10 +181,35 @@
               <span><i class="legend-swatch legend-swatch-open"></i>Not visited</span>
             </div>
           </section>
+
+          <section
+            class="panel view-panel is-hidden"
+            id="geo-panel"
+            role="tabpanel"
+            aria-labelledby="geo-tab"
+            hidden
+          >
+            <div class="panel-heading">
+              <div>
+                <p class="panel-eyebrow">Geographic</p>
+                <h2>Explore a real state-boundary map</h2>
+              </div>
+              <p class="panel-caption">
+                Leaflet-powered US map with clickable state polygons
+              </p>
+            </div>
+            <div class="leaflet-map" id="geo-map" aria-label="Geographic map of US states"></div>
+            <div class="map-legend">
+              <span><i class="legend-swatch legend-swatch-visited"></i>Visited</span>
+              <span><i class="legend-swatch legend-swatch-open"></i>Not visited</span>
+            </div>
+          </section>
         </section>
       </main>
     </div>
 
+    <script defer src="./vendor/leaflet.js"></script>
+    <script defer src="./data/admin1-us.js"></script>
     <script defer src="./app.js"></script>
   </body>
 </html>

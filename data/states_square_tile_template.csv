@@ -1,0 +1,51 @@
+State,Abbr,X,Y
+Alabama,AL,7,1
+Alaska,AK,0,7
+Arizona,AZ,2,2
+Arkansas,AR,5,2
+California,CA,1,3
+Colorado,CO,3,3
+Connecticut,CT,10,4
+Delaware,DE,10,3
+Florida,FL,9,0
+Georgia,GA,8,1
+Hawaii,HI,0,1
+Idaho,ID,2,5
+Illinois,IL,6,4
+Indiana,IN,6,3
+Iowa,IA,5,4
+Kansas,KS,4,2
+Kentucky,KY,7,2
+Louisiana,LA,5,1
+Maine,ME,11,7
+Maryland,MD,9,3
+Massachusetts,MA,10,5
+Michigan,MI,7,5
+Minnesota,MN,5,5
+Mississippi,MS,6,1
+Missouri,MO,5,3
+Montana,MT,3,5
+Nebraska,NE,4,3
+Nevada,NV,2,3
+New Hampshire,NH,11,6
+New Jersey,NJ,9,4
+New Mexico,NM,3,2
+New York,NY,9,5
+North Carolina,NC,9,2
+North Dakota,ND,4,5
+Ohio,OH,7,4
+Oklahoma,OK,4,1
+Oregon,OR,1,4
+Pennsylvania,PA,8,4
+Rhode Island,RI,11,5
+South Carolina,SC,8,2
+South Dakota,SD,4,4
+Tennessee,TN,6,2
+Texas,TX,4,0
+Utah,UT,2,4
+Vermont,VT,10,6
+Virginia,VA,8,3
+Washington,WA,1,5
+West Virginia,WV,7,3
+Wisconsin,WI,6,5
+Wyoming,WY,3,4

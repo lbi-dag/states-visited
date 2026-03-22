@@ -46,6 +46,7 @@ http://127.0.0.1:4173
 |- app.js
 |- data/
 |  |- admin1-us.js
+|  |- states_square_tile_template.csv
 |- vendor/
 |  |- leaflet.css
 |  |- leaflet.js
@@ -80,3 +81,5 @@ https://<username>.github.io/<repo>/
 - Leaflet: <https://leafletjs.com/>
 - U.S. state boundary source: <https://datahub.io/core/geo-admin1-us>
 - Tile map reference: <https://www.fla-shop.com/resources/us-square-tile-grid-map/us-square-tile-grid-map.png>
+- Tile grid CSV template: [`data/states_square_tile_template.csv`](./data/states_square_tile_template.csv)
+- Tile grid CSV source gist: <https://gist.github.com/rlvaugh/8b3077127c238ade4cfc1bc41ecd72b8#file-states_square_tile_template-csv>
